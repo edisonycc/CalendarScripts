@@ -1,5 +1,6 @@
 const RECIPIENT = "edisonye1993@gmail.com";
-const EMAIL_SUBJECT = "InnoWing Equipment Booking Request"
+const EMAIL_SUBJECT = "InnoWing Equipment Booking Request";
+const SUPERVISER_EMAIL = "edison.ccye@gmail.com";
 
 /**
  * Installs a trigger on the Spreadsheet for when a Form response is submitted.
@@ -40,9 +41,12 @@ function onFormSubmit(e) {
     var status = '';
     if (!equipment.includes('3d printers')) {
         MailApp.sendEmail({
-            to: RECIPIENT,
+            to: RECIPIENT + ',' + email,
+            //to: RECIPIENT,
             subject: EMAIL_SUBJECT,
-            htmlBody: createEmailBody(name, equipment, email, phone),
+            // htmlBody: createEmailBody(name, equipment, email, phone),
+            body: createEmailBody(name, equipment, email, phone),
+            //cc: SUPERVISER_EMAIL
         });
         status = 'Sent';
     }
@@ -81,8 +85,9 @@ function createEmailBody(name, equipment, email, phone) {
     // return emailBody;
     let emailBody = `Dear InnoWing, 
                      
-                     Member named ${name} would like to book the ${equipment}. He / she's email is ${email} and phone
-                     number is ${phone}.`;
+Member named ${name} would like to book the ${equipment}. 
+He / she's email is ${email} and phone number is ${phone}.`;
+
     return emailBody;
 }
 
