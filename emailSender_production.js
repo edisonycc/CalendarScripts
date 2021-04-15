@@ -44,42 +44,24 @@ function onFormSubmit(e) {
     sheet.getRange('I10').setValue(supervisor);
     let superVisorEmail = responses['Supervisor\'s contact email (please input "No" if the project has no academic supervisor)'][0].trim();
     sheet.getRange('J10').setValue(superVisorEmail);
+    if (superVisorEmail.toLowerCase() == "no")
+        superVisorEmail = "";
     let uid = responses['HKU ID (Student ID / Staff ID)'][0].trim();
     sheet.getRange('K10').setValue(uid);
     let upload = responses['Please upload the CAD file '][0].trim();
     sheet.getRange('L10').setValue(upload);
 
-//         let emailBody = `Dear Sir / Madam,
-//
-// I want to apply equipment for my project part fabrication.
-// The equipment is ${equipment}.
-// ${upload != '' ? "Cad file:" + upload : 'I do not provide sketch drawing'}.
-// I want to use the equipment on ${requestDate}.
-// Booking session: ${requestTime}
-//
-// My project type is ${projectType}.
-// ${supervisor != "NO" ? "My project supervisor name is " + supervisor : "The project doesn't have a supervisor." }.
-// ${superVisorEmail ? "My project supervisor email is " + superVisorEmail : ""}.
-//
-// My name is ${applicantName}.
-// My HKUID is ${uid}.
-// My email is ${applicantEmail}
-// My contact phone number is ${applicantPhone}
-//
-// ${applicantName}
-// ${timestamp}
-// `;
-    let emailBody = `Dear Sir / Madam, 
+        let emailBody = `Dear Sir / Madam,
 
 I want to apply equipment for my project part fabrication.
 The equipment is ${equipment}.
-Cad file: ${upload}.
+${upload ? "Cad file: " + upload : 'I do not provide sketch drawing'}.
 I want to use the equipment on ${requestDate}.
 Booking session: ${requestTime}
 
 My project type is ${projectType}.
-My project supervisor name is " ${supervisor} .
-My project supervisor email is ${superVisorEmail}.
+${supervisor.toLowerCase() != "no" ? "My project supervisor name is " + supervisor : "The project doesn't have a supervisor." }.
+${superVisorEmail != "" ? "My project supervisor email is " + superVisorEmail : ""}.
 
 My name is ${applicantName}.
 My HKUID is ${uid}.
@@ -91,6 +73,7 @@ ${timestamp}
 `;
 
 
+
     // If the equipment is waterjet machine, send an email to the recipient.
     let status = '';
     if (equipment.includes("waterjet")) {
@@ -100,12 +83,12 @@ ${timestamp}
             body: emailBody,
             cc: superVisorEmail
         });
-        status = 'Sent';
+        //status = 'Sent';
     }
     else {
         status = 'No need to send email';
     }
-    sheet.getRange('M10').setValue(status);
+    //sheet.getRange('M10').setValue(status);
 
 
 
