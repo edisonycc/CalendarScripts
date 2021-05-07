@@ -77,10 +77,10 @@ function  generateEventForCell(row, column) {
         return;
     }
 
-    // if staff has (nickname), show only the nickname
+    // if staff has (nickname), show "[DEPT] nickname"
     try {
         if (eventTitle.toString().includes('(') && eventTitle.toString().includes(')'))
-            eventTitle = eventTitle.match(/\((.+?)\)/g)[0].replace(/[()]/g,''); // extract (nickname) => get rid of "(", ")"
+            eventTitle = '[' + deptName + '] ' + eventTitle.match(/\((.+?)\)/g)[0].replace(/[()]/g,''); // extract (nickname) => get rid of "(", ")"
     } catch (e) {
         return;
     }

@@ -7,7 +7,7 @@ const METADATA_SHEET_NAME = "metadata";
 const DATA_AREA_START_ROW = 18;
 const DATA_AREA_START_COL = 5;
 const DATA_AREA_END_COL = 21;
-const DEPT_NAME_ROW = 17;
+//const DEPT_NAME_ROW = 17;
 const DTAE_TIME_COL = 3;
 
 
@@ -55,12 +55,36 @@ function generateEventForAll() {
 function  generateEventForCell(row, column) {
 
     let eventTitle = mainSheet.getRange(row, column).getValue();
-    if (eventTitle.includes('>')) {
-        let index = eventTitle.indexOf('>');
-        eventTitle = eventTitle.slice(index + 1);
+
+    if (eventTitle === '' ||
+        eventTitle === '/' ||
+        eventTitle.toString().toUpperCase().includes('(ABSEN') ||
+        eventTitle.toString().toUpperCase().includes('(CAN')
+    ) return;
+
+    // if (eventTitle.includes('>')) {
+    //     let index = eventTitle.indexOf('>');
+    //     eventTitle = eventTitle.slice(index + 1);
+    // }
+
+    //let deptName = mainSheet.getRange(DEPT_NAME_ROW, column).getValue();
+
+    // match dept name with the prefix
+    let deptName = "";
+    try {
+        deptName = eventTitle.match(/\[(.+?)\]/g)[0].replace(/\[|]/g,''); // extract [dept] => get rid of "[", "]"
+    } catch (e) {
+        return;
     }
 
-    let deptName = mainSheet.getRange(DEPT_NAME_ROW, column).getValue();
+    // if tutor has (nickname), show "[DEPT] nickname"
+    try {
+        if (eventTitle.toString().includes('(') && eventTitle.toString().includes(')'))
+            eventTitle = '[' + deptName + '] ' + eventTitle.match(/\((.+?)\)/g)[0].replace(/[()]/g,''); // extract (nickname) => get rid of "(", ")"
+    } catch (e) {
+        return;
+    }
+
     let calendarIdCell = "";
     switch (deptName) {
         case 'CIVIL':
@@ -98,14 +122,7 @@ function  generateEventForCell(row, column) {
         mainSheet.getRange(row, column).clearNote();
     }
 
-    if (eventTitle === '' ||
-        eventTitle === '/' ||
-        eventTitle.toString().toUpperCase().includes('(ABSEN') ||
-        //For Sat afternoon
-        eventTitle === "Seto" ||
-        eventTitle === "Wang" ||
-        eventTitle === "Part-time"
-    ) return;
+
 
     let startDate = mainSheet.getRange(row, DTAE_TIME_COL).getValue();
     let startTime_hour = null;
@@ -124,7 +141,8 @@ function  generateEventForCell(row, column) {
     let endDateTime = new Date(new Date(startDate).getTime() + endTime_hour * 60 * 60 * 1000);
 
     //eventId = calendar.createEvent('[' + deptName + ']' + eventTitle, startDateTime, endDateTime, {description: descriptionUrl}).getId();
-    eventId = calendar.createEvent('[' + deptName + '] ' + eventTitle, startDateTime, endDateTime).getId()
+    //eventId = calendar.createEvent('[' + deptName + '] ' + eventTitle, startDateTime, endDateTime).getId()
+    eventId = calendar.createEvent(eventTitle, startDateTime, endDateTime).getId();
     console.log(eventId, deptName, eventTitle, startDateTime, endDateTime);
 
     subSheet.getRange(row, column).setValue(eventId);

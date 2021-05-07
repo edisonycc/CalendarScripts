@@ -1,6 +1,8 @@
-const RECIPIENT = "edisonye1993@gmail.com";
+const RECIPIENT_TechnicalManager = "ccye@hku.hk";
 const EMAIL_SUBJECT = "InnoWing Equipment Booking Request";
-const SUPERVISER_EMAIL = "edison.ccye@gmail.com";
+//const SUPERVISER_EMAIL = "edison.ccye@gmail.com";
+const EMAIL_TEMPLATE_DOC_URL = 'https://docs.google.com/document/d/1J_UwpYEO0WAf9Kr7cOhWliuPk0PA1gpVlxPOgcKcjNE/edit?usp=sharing';
+
 
 /**
  * Installs a trigger on the Spreadsheet for when a Form response is submitted.
@@ -22,11 +24,21 @@ function onFormSubmit(e) {
 
     // If the question title is a label, it can be accessed as an object field.
     // If it has spaces or other characters, it can be accessed as a dictionary.
+
     let timestamp = responses.Timestamp[0];
     let equipment = responses.Equipment[0].toLowerCase();
-    let name = responses['Member name'][0].trim();
-    let email = responses['Contact email (Please use HKU email)'][0].trim();
-    let phone = responses['Contact phone number'][0].trim();
+    let applicantName = responses['Member name'][0].trim();
+    let applicantEmail = responses['Contact email (Please use HKU email)'][0].trim();
+    let applicantPhone = responses['Contact phone number'][0].trim();
+    let requestDate = responses['The requested date'][0].trim();
+    let requestTime = responses['The requested time'][0].trim();
+    let projectType = responses['Project type'][0].trim();
+    let supervisor = responses['Academic supervisor (please input "No" if the project has no academic supervisor)'][0].trim();
+    let supervisorEmail = responses['Supervisor\'s contact email (please input "No" if the project has no academic supervisor)'][0].trim();
+    if (supervisorEmail.toLowerCase() == "no" && !supervisorEmail.toLowerCase().includes('@'))
+        supervisorEmail = "";
+    let uid = responses['HKU ID (Student ID / Staff ID)'][0].trim();
+    let upload = responses['Please upload the CAD file '][0].trim();
 
 
     // // Parse topics of interest into a list (since there are multiple items
@@ -39,14 +51,26 @@ function onFormSubmit(e) {
 
     // If the equipment is not 3d printer, send an email to the recipient.
     var status = '';
-    if (!equipment.includes('3d printers')) {
+    if (equipment.includes("waterjet")) {
         MailApp.sendEmail({
-            to: RECIPIENT + ',' + email,
+            to: RECIPIENT_TechnicalManager + ',' + applicantEmail,
             //to: RECIPIENT,
             subject: EMAIL_SUBJECT,
             // htmlBody: createEmailBody(name, equipment, email, phone),
-            body: createEmailBody(name, equipment, email, phone),
-            //cc: SUPERVISER_EMAIL
+            htmlBody: createEmailBody(timestamp,
+                equipment,
+                applicantName,
+//                applicantEmail,
+                applicantPhone,
+                requestDate,
+                requestTime,
+                projectType,
+                supervisor,
+                supervisorEmail,
+                uid,
+                upload
+            ),
+            cc: supervisorEmail
         });
         status = 'Sent';
     }
@@ -70,23 +94,33 @@ function onFormSubmit(e) {
  * @param {string[]} topics - List of topics to include in the email body.
  * @return {string} - The email body as an HTML string.
  */
-function createEmailBody(name, equipment, email, phone) {
-    // var topicsHtml = topics.map(function(topic) {
-    //     var url = topicUrls[topic];
-    //     return '<li><a href="' + url + '">' + topic + '</a></li>';
-    // }).join('');
-    // topicsHtml = '<ul>' + topicsHtml + '</ul>';
-    //
-    // // Make sure to update the emailTemplateDocId at the top.
-    // var docId = DocumentApp.openByUrl(EMAIL_TEMPLATE_DOC_URL).getId();
-    // var emailBody = docToHtml(docId);
-    // emailBody = emailBody.replace(/{{NAME}}/g, name);
-    // emailBody = emailBody.replace(/{{TOPICS}}/g, topicsHtml);
-    // return emailBody;
-    let emailBody = `Dear InnoWing, 
-                     
-Member named ${name} would like to book the ${equipment}. 
-He / she's email is ${email} and phone number is ${phone}.`;
+function createEmailBody(timestamp,
+                         equipment,
+                         applicantName,
+//                         applicantEmail,
+                         applicantPhone,
+                         requestDate,
+                         requestTime,
+                         projectType,
+                         supervisor,
+                         supervisorEmail,
+                         uid,
+                         upload
+) {
+    // Make sure to update the emailTemplateDocId at the top.
+    var docId = DocumentApp.openByUrl(EMAIL_TEMPLATE_DOC_URL).getId();
+    var emailBody = docToHtml(docId);
+    emailBody = emailBody.replace(/{{timestamp}}/g, timestamp);
+    emailBody = emailBody.replace(/{{equipment}}/g, equipment);
+    emailBody = emailBody.replace(/{{applicantName}}/g, applicantName);
+    emailBody = emailBody.replace(/{{applicantPhone}}/g, applicantPhone);
+    emailBody = emailBody.replace(/{{requestDate}}/g, requestDate);
+    emailBody = emailBody.replace(/{{requestTime}}/g, requestTime);
+    emailBody = emailBody.replace(/{{projectType}}/g, projectType);
+    emailBody = emailBody.replace(/{{supervisor}}/g, supervisor);
+    emailBody = emailBody.replace(/{{supervisorEmail}}/g, supervisorEmail);
+    emailBody = emailBody.replace(/{{uid}}/g, uid);
+    emailBody = emailBody.replace(/{{upload}}/g, upload);
 
     return emailBody;
 }
